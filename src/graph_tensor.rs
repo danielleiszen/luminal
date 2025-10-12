@@ -182,6 +182,25 @@ impl GraphTensor {
             Box::new(move |_| vec![Tensor::new(loader())]);
         self
     }
+
+    /// Select one element from each row using per-row indices
+    ///
+    /// Given a 2D tensor of shape (batch_size, seq_len) and indices of shape (batch_size,),
+    /// returns a 1D tensor of shape (batch_size,) where result[i] = tensor[i, indices[i]]
+    pub fn select(self, indices: GraphTensor) -> GraphTensor {
+        let (_, seq_len) = self.dims2();
+        let batch_indices = indices.dims1();
+
+        // Create one-hot encoding for the column indices
+        let col_one_hot = indices
+            .graph()
+            .arange(seq_len)
+            .expand_dim(0, batch_indices)
+            .eq(indices.expand_dim(1, seq_len));
+
+        // Element-wise multiply and sum to get the selected elements
+        (self * col_one_hot).sum(1)
+    }
 }
 
 fn pretty_print_tensor_recursive(
