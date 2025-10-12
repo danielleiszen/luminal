@@ -3,6 +3,8 @@ mod dynamic;
 pub mod test_graphs;
 #[cfg(test)]
 mod test_prim;
+#[cfg(test)]
+mod test_tensor;
 
 use std::fmt::Debug;
 
